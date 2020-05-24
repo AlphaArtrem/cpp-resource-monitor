@@ -1,0 +1,3 @@
+/media/alphaartrem/Data/Workspace/cpp_developer/cpp-resource-monitor/build/CMakeFiles/rebuild_cache.dir
+/media/alphaartrem/Data/Workspace/cpp_developer/cpp-resource-monitor/build/CMakeFiles/edit_cache.dir
+/media/alphaartrem/Data/Workspace/cpp_developer/cpp-resource-monitor/build/CMakeFiles/monitor.dir
