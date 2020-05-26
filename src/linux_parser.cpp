@@ -169,10 +169,17 @@ int LinuxParser::RunningProcesses() {
 }
 
 // Read and return the command associated with a process
-string LinuxParser::Command(int pid [[maybe_unused]]) { return string(); }
+string LinuxParser::Command(int pid) { 
+  std::ifstream stream(kProcDirectory + std::to_string(pid) + kCmdlineFilename);
+  std::string line;
+  std::getline(stream, line);
+  return line;
+}
 
 // Read and return the memory used by a process
-string LinuxParser::Ram(int pid [[maybe_unused]]) { return string(); }
+string LinuxParser::Ram(int pid [[maybe_unused]]) {
+  return string();
+}
 
 // Read and return the user ID associated with a process
 string LinuxParser::Uid(int pid) {
@@ -211,4 +218,15 @@ string LinuxParser::User(int pid) {
 }
 
 // Read and return the uptime of a process
-long LinuxParser::UpTime(int pid [[maybe_unused]]) { return 0; }
+long LinuxParser::UpTime(int pid) {
+  std::ifstream stream(kProcDirectory + std::to_string(pid) + kStatFilename);
+  std::string line, value;
+  if(stream.is_open()){
+    std::getline(stream, line);
+    std::istringstream stringstream(line);
+    for(int i = 0; i < 22; i++){
+      stringstream >> value;
+    }
+  }
+  return sysconf(std::stol(value));
+}
