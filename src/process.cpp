@@ -16,13 +16,16 @@ using std::vector;
 int Process::Pid() { return pid; }
 
 // Return this process's CPU utilization
-float Process::CpuUtilization() { return 0; }
+float Process::CpuUtilization() { 
+    cpuUtilization = LinuxParser::CpuUtilization(pid);
+    return cpuUtilization; 
+}
 
 // Return the command that generated this process
 string Process::Command() { return LinuxParser::Command(pid); }
 
 // Return this process's memory utilization
-string Process::Ram() { return string(); }
+string Process::Ram() { return LinuxParser::Ram(pid); }
 
 // Return the user (name) that generated this process
 string Process::User() { return LinuxParser::User(pid); }
@@ -31,4 +34,6 @@ string Process::User() { return LinuxParser::User(pid); }
 long int Process::UpTime() { return LinuxParser::UpTime(pid); }
 
 // Overload the "less than" comparison operator for Process objects
-bool Process::operator<(Process const& a[[maybe_unused]]) const { return true; }
+bool Process::operator<(Process const& a) const { 
+    return cpuUtilization < a.cpuUtilization; 
+}

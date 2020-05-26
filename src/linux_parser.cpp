@@ -108,7 +108,7 @@ long LinuxParser::UpTime()
     std::istringstream linestream(line);
     linestream >> uptime;
   }
-  return std::stol(uptime);
+  return uptime.empty() ? 0 : std::stol(uptime);
 }
 
 // Read and return the number of jiffies for the system
@@ -123,8 +123,43 @@ long LinuxParser::ActiveJiffies() { return 0; }
 // Read and return the number of idle jiffies for the system
 long LinuxParser::IdleJiffies() { return 0; }
 
-// Read and return CPU utilization
-vector<string> LinuxParser::CpuUtilization() { return {}; }
+// Read and return CPU utilization of a process
+float LinuxParser::CpuUtilization(int pid) { 
+  long uptime = UpTime();
+  std::ifstream stream(kProcDirectory + std::to_string(pid) + kStatFilename);
+  std::string line, value;
+  long utime, stime, cutime, cstime, starttime, total_time, seconds;
+  float cpu_usage;
+
+  if(stream.is_open()){
+    std::getline(stream, line);
+    std::istringstream stringstream(line);
+    for(int i = 0; i < 22; i++){
+      stringstream >> value;
+      if(i == 13){
+        utime = std::stol(value);
+      }
+      else if(i == 14){
+        stime = std::stol(value);
+      }
+      else if(i == 15){
+        cutime = std::stol(value);
+      }
+      else if(i == 16){
+        cstime = std::stol(value);
+      }
+      else if(i == 22){
+        starttime = std::stol(value);
+      }
+    }
+  }
+
+  total_time = utime + stime + cutime + cstime;
+  seconds = uptime - (starttime / sysconf(_SC_CLK_TCK));
+  cpu_usage = ((total_time / sysconf(_SC_CLK_TCK)) / seconds);
+
+  return cpu_usage;
+}
 
 // Read and return the total number of processes
 int LinuxParser::TotalProcesses() {
@@ -173,12 +208,24 @@ string LinuxParser::Command(int pid) {
   std::ifstream stream(kProcDirectory + std::to_string(pid) + kCmdlineFilename);
   std::string line;
   std::getline(stream, line);
-  return line;
+  return line.empty() ? string() : line;
 }
 
 // Read and return the memory used by a process
-string LinuxParser::Ram(int pid [[maybe_unused]]) {
-  return string();
+string LinuxParser::Ram(int pid) {
+  std::ifstream stream(kProcDirectory + std::to_string(pid) + kStatusFilename);
+  std::string line, value;
+  if(stream.is_open()){
+    while(std::getline(stream, line)){
+      std::istringstream stringstream(line);
+      stringstream >> value;
+      if(value == "VmSize:"){
+        stringstream >> value;
+        break;
+      }
+    }
+  }
+  return value.empty() || !std::all_of(value.begin(), value.end(), isdigit) ? string() : std::to_string(std::stol(value) / 1024);
 }
 
 // Read and return the user ID associated with a process
@@ -195,7 +242,7 @@ string LinuxParser::Uid(int pid) {
       }
     }
   }
-  return value;
+  return value.empty() ? string() : value;
 }
 
 // Read and return the user associated with a process
@@ -214,7 +261,7 @@ string LinuxParser::User(int pid) {
       }
     }
   }
-  return user;
+  return user.empty() ? string() : user;
 }
 
 // Read and return the uptime of a process
@@ -228,5 +275,5 @@ long LinuxParser::UpTime(int pid) {
       stringstream >> value;
     }
   }
-  return sysconf(std::stol(value));
+  return value.empty() ? 0 : (std::stol(value) / sysconf(_SC_CLK_TCK));
 }
