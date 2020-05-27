@@ -26,26 +26,26 @@ float Processor::Utilization() {
     }
     
     // Getting values from read stream
-    double user = values[0];
-    double nice = values[1];
-    double system = values[2];
-    double idle = values[3];
-    double iowait = values[4];
-    double irq = values[5];
-    double softirq = values[6];
-    double steal = values[7];
+    const double user = values[0];
+    const double nice = values[1];
+    const double system = values[2];
+    const double idle = values[3];
+    const double iowait = values[4];
+    const double irq = values[5];
+    const double softirq = values[6];
+    const double steal = values[7];
 
     // Calculating Cpu usage precantage
-    double PrevIdle = previdle + previowait;
-    double Idle = idle + iowait;
-    double PrevNonIdle = prevuser + prevnice + prevsystem + previrq + prevsoftirq + prevsteal;
-    double NonIdle = user + nice + system + irq + softirq + steal;
-    double PrevTotal = PrevIdle + PrevNonIdle;
-    double Total = Idle + NonIdle;
+    const double PrevIdle = previdle + previowait;
+    const double Idle = idle + iowait;
+    const double PrevNonIdle = prevuser + prevnice + prevsystem + previrq + prevsoftirq + prevsteal;
+    const double NonIdle = user + nice + system + irq + softirq + steal;
+    const double PrevTotal = PrevIdle + PrevNonIdle;
+    const double Total = Idle + NonIdle;
 
-    double totald = Total - PrevTotal;
-    double idled = Idle - PrevIdle;
-    double CpuUsage = (totald - idled) / totald;
+    const double totald = Total - PrevTotal;
+    const double idled = Idle - PrevIdle;
+    const double CpuUsage = (totald - idled) / totald;
 
     // Updating previous values
     prevuser = values[0];

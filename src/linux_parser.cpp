@@ -111,24 +111,12 @@ long LinuxParser::UpTime()
   return uptime.empty() ? 0 : std::stol(uptime);
 }
 
-// Read and return the number of jiffies for the system
-long LinuxParser::Jiffies() { return 0; }
-
-// Read and return the number of active jiffies for a PID
-long LinuxParser::ActiveJiffies(int pid [[maybe_unused]]) { return 0; }
-
-// Read and return the number of active jiffies for the system
-long LinuxParser::ActiveJiffies() { return 0; }
-
-// Read and return the number of idle jiffies for the system
-long LinuxParser::IdleJiffies() { return 0; }
-
 // Read and return CPU utilization of a process
 float LinuxParser::CpuUtilization(int pid) { 
-  long uptime = UpTime();
+  float uptime = float(UpTime());
   std::ifstream stream(kProcDirectory + std::to_string(pid) + kStatFilename);
   std::string line, value;
-  long utime, stime, cutime, cstime, starttime, total_time, seconds;
+  float utime, stime, cutime, cstime, starttime, total_time, seconds;
   float cpu_usage;
 
   if(stream.is_open()){
@@ -148,7 +136,7 @@ float LinuxParser::CpuUtilization(int pid) {
       else if(i == 16){
         cstime = std::stol(value);
       }
-      else if(i == 22){
+      else if(i == 21){
         starttime = std::stol(value);
       }
     }
@@ -275,5 +263,5 @@ long LinuxParser::UpTime(int pid) {
       stringstream >> value;
     }
   }
-  return value.empty() ? 0 : (std::stol(value) / sysconf(_SC_CLK_TCK));
+  return value.empty() ? 0 : UpTime() - (std::stol(value) / sysconf(_SC_CLK_TCK));
 }
